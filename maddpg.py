@@ -36,8 +36,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 logger.info('Using device: {}'.format(device))
 
 class MADDPGAgent():
-    """Multi Agent DDPG Implementation
+    """
+    Multi Agent DDPG Implementation
     Paper: https://arxiv.org/abs/1706.02275
+    I used their code to understand how the agents were implemented https://github.com/openai/maddpg
     """
     def __init__(self, state_size, action_size, num_agents, agent_index, writer, random_seed, dirname, print_every=1000, model_path=None, eval_mode=False):
         """Initialize an Agent object.
