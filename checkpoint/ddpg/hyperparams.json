@@ -1,0 +1,14 @@
+{
+    "USE_BATCHNORM": false,
+    "BUFFER_SIZE": 2000000,
+    "BATCH_SIZE": 256,
+    "GAMMA": 0.9,
+    "TAU": 0.001,
+    "LR_ACTOR": 0.001,
+    "LR_CRITIC": 0.001,
+    "WEIGHT_DECAY": 0,
+    "SCALE_REWARD": 1.0,
+    "SIGMA": 0.01,
+    "FC1": 32,
+    "FC2": 16
+}
