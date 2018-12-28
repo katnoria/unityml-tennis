@@ -7,8 +7,8 @@ from maddpg import MADDPGAgentTrainer
 from utils import VisWriter
 from unityagents import UnityEnvironment
 
+# Setup logger
 logger = logging.getLogger(__name__)
-
 dirname = 'logs'
 if not os.path.exists(dirname):
     os.makedirs(dirname)
@@ -16,13 +16,13 @@ if not os.path.exists(dirname):
 def play(env, brain_name, num_agents, agent, num_episodes=10):
     """Execute policy in specified environment
 
-    Params
-    ======
-        env (object): Unity environment
-        brain_name (string): Name of brain
-        num_agents (int): Number of agents
-        agent (object): Pretrained agent
+    Args:
+        env: Unity environment object
+        brain_name: A string parameter indicating name of brain
+        num_agents: An integer representing number of agents
+        agent: An instance of agent (DDPGMultiAgent or MADDPGAgentTrainer)
     """
+
     best_score = -np.inf
     scores = []
     env_info = env.reset(train_mode=False)[brain_name]
@@ -51,6 +51,7 @@ def main():
     parser.add_argument("--env", type=str, help="Full path of environment")
     parser.add_argument("--agent", type=str, help="Choose implemntation [maddpg,ddpg]")
     parser.add_argument("--model", type=str, help="Model checkpoint path, use if you wish to continue training from a checkpoint")
+    parser.add_argument("--num_episodes", type=int, help="Number of episodes")
 
 
     args = parser.parse_args()
@@ -76,7 +77,7 @@ def main():
     elif args.agent == 'maddpg':
         agent = MADDPGAgentTrainer(state_shape, action_size, num_agents, writer=writer, random_seed=10, dirname=dirname, print_every=100, model_path=args.model, eval_mode=True)
 
-    play(env, brain_name, num_agents, agent)
+    play(env, brain_name, num_agents, agent, num_episodes=args.num_episodes)
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     main()
