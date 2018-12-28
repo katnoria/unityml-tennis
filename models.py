@@ -1,5 +1,4 @@
 import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -9,19 +8,22 @@ def hidden_init(layer):
     lim = 1. / np.sqrt(fan_in)
     return (-lim, lim)
 
+
 class Actor(nn.Module):
-    """Actor (Policy) Model."""
+    """Actor (Policy) Model.
+    
+    Args:
+        state_size: An integer representing the dimension of each state.
+        action_size: An integer representing the dimension of each action.
+        seed: An integer random seed.
+        fc1_units: An integer representing the number of nodes in first
+            hidden layer.
+        fc2_units: An integer representing the number of nodes in second
+            hidden layer.
+    """
 
     def __init__(self, state_size, action_size, seed, fc1_units=400, fc2_units=300, use_bn=False):
-        """Initialize parameters and build model.
-        Params
-        ======
-            state_size (int): Dimension of each state
-            action_size (int): Dimension of each action
-            seed (int): Random seed
-            fc1_units (int): Number of nodes in first hidden layer
-            fc2_units (int): Number of nodes in second hidden layer
-        """
+        """Initialize parameters and build model."""
         super(Actor, self).__init__()
         self.seed = torch.manual_seed(seed)
         self.use_bn = use_bn
@@ -36,6 +38,7 @@ class Actor(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
+        """Resets the weights and biases of all fully connected layers."""        
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
         self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
         self.fc3.weight.data.uniform_(-3e-3, 3e-3)
@@ -47,9 +50,9 @@ class Actor(nn.Module):
         """Build an actor (policy) network that maps states -> actions."""
         if self.use_bn:
             x = self.fc1(self.bn1(state))
-        else:            
+        else:
             x = self.fc1(state)
-            
+
         x = F.relu(x)
         if self.use_bn:
             x = self.bn2(x)
@@ -61,18 +64,20 @@ class Actor(nn.Module):
 
 
 class Critic(nn.Module):
-    """Critic (Value) Model."""
+    """Critic (Value) Model.
+
+    Args:
+        state_size: An integer representing the dimension of each state.
+        action_size: An integer representing the dimension of each action.
+        seed: An integer random seed.
+        fc1_units: An integer representing the number of nodes in first
+            hidden layer.
+        fc2_units: An integer representing the number of nodes in second
+            hidden layer.
+    """
 
     def __init__(self, state_size, action_size, seed, fc1_units=400, fc2_units=300, use_bn=False):
-        """Initialize parameters and build model.
-        Params
-        ======
-            state_size (int): Dimension of each state
-            action_size (int): Dimension of each action
-            seed (int): Random seed
-            fc1_units (int): Number of nodes in the first hidden layer
-            fc2_units (int): Number of nodes in the second hidden layer
-        """
+        """Initialize parameters and build model."""
         super(Critic, self).__init__()
         self.seed = torch.manual_seed(seed)
         self.use_bn = use_bn
@@ -86,6 +91,7 @@ class Critic(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
+        """Resets the weights and biases of all fully connected layers."""
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
         self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
         self.fc3.weight.data.uniform_(-3e-3, 3e-3)
@@ -94,7 +100,14 @@ class Critic(nn.Module):
         self.fc3.bias.data.fill_(0.1)
 
     def forward(self, state, action):
-        """Build a critic (value) network that maps (state, action) pairs -> Q-values."""
+        """Build a critic (value) network.
+
+        Maps (state, action) pairs -> Q-values.
+        
+        Args:
+            state: A list of floats representing the state
+            action: A float representing the action
+        """
         x  = self.fc1(state)
         xs = F.relu(x)
         if self.use_bn:
@@ -107,22 +120,25 @@ class Critic(nn.Module):
         return self.fc3(x)
 
 class CentralCritic(nn.Module):
-    """Critic (Value) Model."""
+    """Critic (Value) Model.
+
+    Args:
+        state_size: An integer dimension of each state.
+        action_size: An integer dimension of each action.
+        seed: An integer representing random seed.
+        fc1_units: An integer representing number of nodes in the first
+            hidden layer.
+        fc2_units: An integer representing the number of nodes in the
+            second hidden layer.    
+    """
 
     def __init__(self, state_size, action_size, seed, num_agents=1, fc1_units=64, fc2_units=32, use_bn=False):
-        """Initialize parameters and build model.
-        Params
-        ======
-            state_size (int): Dimension of each state
-            action_size (int): Dimension of each action
-            seed (int): Random seed
-            fc1_units (int): Number of nodes in the first hidden layer
-            fc2_units (int): Number of nodes in the second hidden layer
-        """
+        """Initialize parameters and build model."""
+
         super(CentralCritic, self).__init__()
         self.seed = torch.manual_seed(seed)
         self.use_bn = use_bn
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         self.fc1 = nn.Linear(state_size * num_agents, fc1_units * num_agents)
         self.fc2 = nn.Linear(fc1_units * num_agents + action_size * num_agents, fc2_units * num_agents)
         self.fc3 = nn.Linear(fc2_units * num_agents, 1 * num_agents)
@@ -133,6 +149,7 @@ class CentralCritic(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
+        """Resets the weights and biases of all fully connected layers."""
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
         self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
         self.fc3.weight.data.uniform_(-3e-3, 3e-3)
@@ -141,7 +158,14 @@ class CentralCritic(nn.Module):
         self.fc3.bias.data.fill_(0.1)
 
     def forward(self, state, action):
-        """Build a critic (value) network that maps (state, action) pairs -> Q-values."""
+        """Build a critic (value) network.
+
+        Maps (state, action) pairs -> Q-values.
+
+        Args:
+            state: A list of floats representing the state
+            action: A float representing the action
+        """
         x  = self.fc1(state)
         xs = F.relu(x)
         if self.use_bn:
